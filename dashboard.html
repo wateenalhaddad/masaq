@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مساق - مستشارك الاستثماري الذكي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue-primary: #187EC9;
+      --blue-dark: #0F5A8A;
+      --blue-soft: #E6F2FA;
+      --blue-soft-2: #D1E6F5;
+      --brown: #726767;
+      --brown-light: #F5F0EE;
+      --text-main: #2D2A2A;
+      --text-muted: #6B5F5F;
+      --bg: #F9F7F6;
+      --card-bg: #ffffff;
+      --border: #E8E0DE;
+      --shadow: 0 4px 20px rgba(24,126,201,0.08);
+      --shadow-hover: 0 8px 28px rgba(24,126,201,0.14);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Tajawal',sans-serif;background:linear-gradient(180deg,#F0F6FC 0%,#F9F7F6 100%);color:var(--text-main);min-height:100vh;}
+    a{text-decoration:none;color:inherit;} button{font-family:inherit;cursor:pointer;border:none;}
+    .app{display:flex;min-height:100vh;max-width:1500px;margin:0 auto;}
+    .sidebar{width:230px;flex-shrink:0;padding:28px 20px;display:flex;flex-direction:column;gap:6px;}
+    .logo-wrap{display:flex;justify-content:center;padding:10px 0 26px 0;}
+    .logo-wrap img{height:40px;width:auto;}
+    .nav-item{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-radius:14px;font-size:15px;font-weight:700;color:var(--text-main);transition:all .18s ease;}
+    .nav-item .icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--blue-primary);}
+    .nav-item.active{background:linear-gradient(135deg,#187EC9,#0F5A8A);color:#fff;box-shadow:0 6px 16px rgba(24,126,201,0.35);}
+    .nav-item.active .icon{color:#fff;}
+    .nav-item:not(.active):hover{background:var(--blue-soft);}
+    .main{flex:1;padding:26px 34px 60px 34px;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:30px;}
+    .market-pill{background:var(--card-bg);border-radius:16px;padding:12px 20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px;white-space:nowrap;}
+    .market-pill .dot{width:9px;height:9px;border-radius:50%;background:var(--blue-primary);box-shadow:0 0 0 4px rgba(24,126,201,0.15);}
+    .market-pill .label{font-size:12px;color:var(--text-muted);font-weight:500;}
+    .market-pill .change{background:var(--blue-soft);color:var(--blue-primary);font-weight:700;font-size:12px;padding:3px 8px;border-radius:8px;}
+    .market-pill .value{font-size:17px;font-weight:800;background:linear-gradient(90deg,#f0e8e6,#faf6f4);padding:3px 10px;border-radius:8px;color:var(--text-main);}
+    .section-title{display:flex;align-items:center;gap:10px;font-size:26px;font-weight:800;margin:6px 0 18px 0;color:var(--blue-dark);}
+    .section-title .badge-icon{width:34px;height:34px;border-radius:50%;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;color:var(--blue-primary);}
+    .hero-card{background:var(--card-bg);border-radius:22px;box-shadow:var(--shadow);padding:26px 30px;margin-bottom:38px;}
+    .hero-search-row{display:flex;gap:14px;align-items:stretch;}
+    .btn-analyze{background:var(--blue-primary);color:#fff;font-weight:700;font-size:15px;padding:0 34px;border-radius:14px;display:flex;align-items:center;justify-content:center;white-space:nowrap;transition:.18s;}
+    .btn-analyze:hover{background:var(--blue-dark);}
+    .hero-input{flex:1;background:var(--blue-soft);border-radius:14px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;gap:12px;}
+    .hero-input input{flex:1;border:none;outline:none;background:transparent;font-family:inherit;font-size:15px;text-align:right;color:var(--text-main);padding:16px 0;}
+    .hero-input input::placeholder{color:#9aacb8;}
+    .hero-input .spark{color:var(--blue-primary);flex-shrink:0;}
+    .clear-btn{display:none;align-items:center;justify-content:center;width:22px;height:22px;flex-shrink:0;border-radius:50%;background:#eef2f1;color:#8a9895;font-size:14px;line-height:1;}
+    .clear-btn:hover{background:#e2e9e7;color:var(--text-main);}
+    .clear-btn.show{display:flex;}
+    .quick-suggest{display:flex;align-items:center;gap:12px;margin-top:22px;flex-wrap:wrap;}
+    .quick-suggest .label{font-size:14px;color:var(--text-muted);font-weight:500;margin-left:4px;}
+    .chip{background:var(--blue-soft);color:var(--text-main);font-weight:700;font-size:14px;padding:8px 20px;border-radius:12px;transition:.15s;cursor:pointer;}
+    .chip:hover{background:var(--blue-soft-2);color:var(--blue-primary);}
+    .hero-search-msg{display:none;margin-top:14px;font-size:13.5px;font-weight:600;color:#c0392b;background:#fde8e5;padding:10px 16px;border-radius:12px;}
+    .hero-search-msg.show{display:block;}
+    .rec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-bottom:44px;}
+    .rec-card{background:var(--card-bg);border-radius:20px;box-shadow:var(--shadow);padding:22px 22px 24px;transition:.2s;border-top:4px solid var(--blue-primary);}
+    .rec-card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px);}
+    .rec-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+    .tag{font-size:13px;font-weight:700;padding:6px 16px;border-radius:20px;}
+    .tag.buy{background:var(--blue-soft);color:var(--blue-primary);}
+    .tag.wait{background:#fdf1dc;color:#d4a017;}
+    .tag.sell{background:#fbe4e5;color:#c0392b;}
+    .rec-name{display:flex;align-items:center;gap:8px;}
+    .rec-name .ticker{font-size:12px;color:var(--text-muted);background:#f1f5f4;padding:3px 8px;border-radius:7px;font-weight:600;}
+    .rec-name .name{font-size:17px;font-weight:800;color:var(--blue-dark);}
+    .rec-price-row{display:flex;align-items:baseline;justify-content:flex-end;gap:8px;margin-bottom:14px;}
+    .rec-price{font-size:26px;font-weight:800;}
+    .rec-price .unit{font-size:13px;font-weight:600;color:var(--text-muted);}
+    .rec-change{font-size:13px;font-weight:700;}
+    .rec-change.up{color:var(--blue-primary);}
+    .rec-change.down{color:#c0392b;}
+    .sparkline{width:100%;height:70px;margin-bottom:14px;}
+    .confidence-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;margin-bottom:8px;}
+    .confidence-row .pct{font-size:16px;}
+    .confidence-track{width:100%;height:7px;background:#eef2f1;border-radius:6px;overflow:hidden;margin-bottom:16px;}
+    .confidence-fill{height:100%;border-radius:6px;}
+    .fill-buy{background:linear-gradient(90deg,#6ba6d9,#187EC9);}
+    .fill-wait{background:linear-gradient(90deg,#f7c565,#d4a017);}
+    .fill-sell{background:linear-gradient(90deg,#ef8489,#c0392b);}
+    .rec-note{background:var(--brown-light);border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.7;color:#4a3f3f;}
+    .table-card{background:var(--card-bg);border-radius:22px;box-shadow:var(--shadow);padding:26px 30px 10px;margin-bottom:20px;}
+    .table-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:14px;}
+    .filter-tabs{background:var(--bg);border-radius:14px;padding:5px;display:flex;gap:2px;}
+    .filter-tab{padding:9px 22px;border-radius:11px;font-size:14px;font-weight:700;color:var(--text-muted);background:transparent;transition:.15s;}
+    .filter-tab.active{background:var(--blue-primary);color:#fff;}
+    .filter-tab:not(.active):hover{color:var(--text-main);}
+    table{width:100%;border-collapse:collapse;}
+    thead th{text-align:right;font-size:13px;font-weight:700;color:var(--text-muted);padding:12px 14px;background:var(--blue-soft);}
+    thead th:first-child{border-radius:0 12px 12px 0;text-align:right;}
+    thead th:last-child{border-radius:12px 0 0 12px;text-align:left;}
+    tbody td{padding:16px 14px;font-size:14.5px;border-bottom:1px solid var(--border);}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr{transition:.15s;}
+    tbody tr:hover{background:#fafcfb;}
+    .company-cell{display:flex;align-items:center;gap:10px;justify-content:flex-start;}
+    .company-cell .ticker-badge{background:var(--blue-soft);color:var(--blue-primary);font-size:12px;font-weight:700;padding:4px 9px;border-radius:8px;}
+    .company-cell .cname{font-weight:700;color:var(--blue-dark);}
+    .price-cell{font-weight:800;font-size:15px;}
+    .change-cell{font-weight:700;}
+    .change-cell.up{color:var(--blue-primary);}
+    .change-cell.down{color:#c0392b;}
+    .rec-pill{font-size:13px;font-weight:700;padding:6px 16px;border-radius:18px;display:inline-block;}
+    .rec-pill.buy{background:var(--blue-soft);color:var(--blue-primary);}
+    .rec-pill.wait{background:#fdf1dc;color:#d4a017;}
+    .rec-pill.sell{background:#fbe4e5;color:#c0392b;}
+    .conf-cell{display:flex;align-items:center;gap:10px;justify-content:flex-end;}
+    .conf-cell .pct{font-weight:800;font-size:14px;width:34px;text-align:left;}
+    .conf-bar{width:70px;height:6px;border-radius:5px;background:#eef2f1;overflow:hidden;}
+    .conf-bar>div{height:100%;border-radius:5px;}
+    .disclaimer{text-align:center;font-size:12.5px;color:#9aa8a5;padding:18px 0 6px 0;}
+    .search-active-note{font-size:12.5px;font-weight:600;color:var(--blue-primary);background:var(--blue-soft);padding:6px 14px;border-radius:10px;display:none;align-items:center;gap:6px;margin-bottom:14px;}
+    .search-active-note.show{display:inline-flex;}
+    .search-active-note button{color:var(--blue-primary);font-weight:800;text-decoration:underline;}
+    .loading-row td{text-align:center;padding:30px 14px;color:var(--text-muted);font-weight:600;}
+    .retry-btn{background:var(--blue-primary);color:#fff;padding:6px 18px;border-radius:10px;font-weight:700;margin-right:12px;}
+    .retry-btn:hover{background:var(--blue-dark);}
+    .assistant-overlay{display:none;position:fixed;inset:0;background:rgba(13,27,42,0.45);backdrop-filter:blur(2px);z-index:100;align-items:center;justify-content:center;padding:20px;}
+    .assistant-overlay.show{display:flex;}
+    .assistant-panel{width:100%;max-width:540px;height:min(700px,90vh);background:var(--card-bg);border-radius:26px;box-shadow:0 24px 60px rgba(13,27,42,0.35);display:flex;flex-direction:column;overflow:hidden;}
+    .assistant-head{background:linear-gradient(135deg,#187EC9,#0F5A8A);color:#fff;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .assistant-head .who{display:flex;align-items:center;gap:12px;}
+    .assistant-head .avatar{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;}
+    .assistant-head h4{font-size:16px;font-weight:800;}
+    .assistant-head p{font-size:12px;opacity:.9;font-weight:500;}
+    .assistant-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.18);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;}
+    .assistant-close:hover{background:rgba(255,255,255,0.3);}
+    .assistant-body{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;background:var(--bg);}
+    .msg{max-width:84%;padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.8;white-space:pre-line;word-break:break-word;}
+    .msg.bot{background:var(--card-bg);box-shadow:var(--shadow);align-self:flex-end;border-bottom-right-radius:4px;}
+    .msg.user{background:linear-gradient(135deg,#187EC9,#0F5A8A);color:#fff;align-self:flex-start;border-bottom-left-radius:4px;font-weight:600;}
+    .msg.error{background:#fbe4e5;color:#c0392b;align-self:flex-end;border-bottom-right-radius:4px;font-weight:600;}
+    .assistant-suggest{display:flex;flex-wrap:wrap;gap:8px;padding:0 20px 14px;background:var(--bg);flex-shrink:0;}
+    .assistant-suggest .chip{font-size:12.5px;padding:7px 14px;background:var(--card-bg);box-shadow:var(--shadow);}
+    .assistant-input-row{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--card-bg);border-top:1px solid var(--border);flex-shrink:0;}
+    .assistant-input-row input{flex:1;border:none;outline:none;background:var(--bg);border-radius:14px;padding:13px 16px;font-family:inherit;font-size:14px;text-align:right;color:var(--text-main);}
+    .assistant-send{width:44px;height:44px;border-radius:50%;flex-shrink:0;background:var(--blue-primary);color:#fff;display:flex;align-items:center;justify-content:center;transition:.15s;}
+    .assistant-send:hover{background:var(--blue-dark);}
+    @media (max-width:1100px){.rec-grid{grid-template-columns:repeat(2,1fr);}}
+    @media (max-width:900px){.app{flex-direction:column;}.sidebar{width:100%;flex-direction:row;overflow-x:auto;padding:16px 20px;}.sidebar .logo-wrap{padding:6px 14px 6px 0;}.sidebar .logo-wrap img{height:32px;}.nav-item{padding:10px 14px;font-size:13px;white-space:nowrap;}.rec-grid{grid-template-columns:1fr;}.topbar{flex-direction:column;align-items:stretch;}.main{padding:16px 18px 40px;}.table-card{padding:16px 14px 10px;}.hero-card{padding:18px 16px;}.hero-search-row{flex-wrap:wrap;}.btn-analyze{width:100%;padding:14px;}.assistant-panel{height:95vh;max-width:100%;border-radius:18px;}}
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <a class="logo-wrap" href="home.html">
+      <img src="data:image/png;base64,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" alt="مساق">
+    </a>
+    <a class="nav-item active" href="#">
+      لوحة التحكم
+      <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
+    </a>
+    <a class="nav-item" href="#" id="assistantNavBtn">
+      مساعد مساق
+      <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+    </a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="market-pill" id="marketPill">
+        <span class="dot"></span>
+        <span class="label">مؤشر تداول</span>
+        <span class="change" id="indexChange">+0.73%</span>
+        <span class="value" id="indexValue">11,842.30</span>
+      </div>
+    </div>
+
+    <div class="section-title">
+      البحث الذكي
+      <span class="badge-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg></span>
+    </div>
+    <div class="hero-card">
+      <div class="hero-search-row">
+        <button class="btn-analyze" id="analyzeBtn">تحليل</button>
+        <div class="hero-input">
+          <input type="text" id="heroInput" placeholder="ابحث عن سهم أو اكتب اسم الشركة للتحليل المباشر...">
+          <button type="button" class="clear-btn" id="heroSearchClear">✕</button>
+          <span class="spark"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l1.9 5.8L20 10l-6.1 2.2L12 18l-1.9-5.8L4 10l6.1-2.2z"/></svg></span>
+        </div>
+      </div>
+      <div class="hero-search-msg" id="heroSearchMsg">لم يتم العثور على نتائج مطابقة، جرّب اسم شركة أو رمزًا آخر.</div>
+      <div class="quick-suggest">
+        <span class="label">اقتراحات سريعة:</span>
+        <span class="chip">أرامكو</span>
+        <span class="chip">STC</span>
+        <span class="chip">الراجحي</span>
+        <span class="chip">سابك</span>
+        <span class="chip">معادن</span>
+      </div>
+    </div>
+
+    <div class="section-title">
+      ترشيحات مساق
+      <span class="badge-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+    </div>
+    <div class="rec-grid" id="recGrid"></div>
+
+    <div class="section-title">
+      نظرة عامة على السوق
+      <span class="badge-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
+    </div>
+    <div class="table-card">
+      <span class="search-active-note" id="searchActiveNote">
+        نتائج البحث عن "<span id="searchActiveTerm"></span>" — <button type="button" id="clearSearchFromTable">عرض كل السوق</button>
+      </span>
+      <div class="table-header">
+        <div></div>
+        <div class="filter-tabs" id="filterTabs">
+          <button class="filter-tab active" data-filter="all">الكل</button>
+          <button class="filter-tab" data-filter="buy">شراء</button>
+          <button class="filter-tab" data-filter="wait">انتظار</button>
+          <button class="filter-tab" data-filter="sell">بيع</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>الشركة</th><th>السعر (ر.س)</th><th>التغير</th><th>التوصية</th><th>الثقة</th></tr></thead>
+        <tbody id="stocksBody"></tbody>
+      </table>
+      <div class="disclaimer">المعلومات المقدمة هي لأغراض تعليمية وتحليلية ولا تعتبر توصية مالية مباشرة. البيانات من Yahoo Finance عبر خادم Flask.</div>
+    </div>
+  </main>
+</div>
+
+<!-- AI ASSISTANT -->
+<div class="assistant-overlay" id="assistantOverlay">
+  <div class="assistant-panel">
+    <div class="assistant-head">
+      <div class="who">
+        <span class="avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+        <div><h4>مساعد مساق</h4><p>أسأل عن أي سهم أو استفسار مالي</p></div>
+      </div>
+      <button type="button" class="assistant-close" id="assistantClose">✕</button>
+    </div>
+    <div class="assistant-body" id="assistantBody"></div>
+    <div class="assistant-suggest">
+      <span class="chip" data-q="كيف أداء أرامكو؟">كيف أداء أرامكو؟</span>
+      <span class="chip" data-q="ما هي أفضل توصيات الشراء اليوم؟">أفضل توصيات الشراء</span>
+      <span class="chip" data-q="كيف يعمل مؤشر تداول؟">كيف يعمل المؤشر؟</span>
+    </div>
+    <div class="assistant-input-row">
+      <input type="text" id="assistantInput" placeholder="اكتب سؤالك هنا...">
+      <button type="button" class="assistant-send" id="assistantSend">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ─── CONFIG ──────────────────────────────────────────────
+  const API_BASE = 'http://127.0.0.1:5000';
+
+  // ─── FALLBACK DATA ──────────────────────────────────────
+  const FALLBACK_STOCKS = [
+    { ticker:"2222", name:"أرامكو", price:28.50, change:1.2, rec:"buy", conf:91, note:"توقعات بنمو الأرباح الربعية." },
+    { ticker:"7010", name:"STC", price:47.20, change:-0.3, rec:"wait", conf:72, note:"مرحلة تجميع." },
+    { ticker:"1120", name:"الراجحي", price:85.40, change:0.8, rec:"buy", conf:88, note:"مؤشرات فنية قوية." },
+    { ticker:"2010", name:"سابك", price:96.80, change:2.1, rec:"buy", conf:85, note:"تحسن هوامش الربحية." },
+    { ticker:"1211", name:"معادن", price:56.10, change:-1.5, rec:"sell", conf:68, note:"ضغوط على الأسعار العالمية." },
+  ];
+  // ... (add more if you like, but server will provide real data)
+
+  const recLabel = { buy:"شراء", wait:"انتظار", sell:"بيع" };
+  const fillClass = { buy:"fill-buy", wait:"fill-wait", sell:"fill-sell" };
+
+  let stocks = [...FALLBACK_STOCKS];
+  let currentFilter = 'all';
+  let currentSearch = '';
+  let isLoading = false;
+  let serverReachable = true;
+
+  // ─── HELPERS ─────────────────────────────────────────────
+  function sparkPath(seed, up) {
+    let pts = [], y = 45;
+    for (let i=0; i<12; i++) {
+      const r = Math.sin(seed + i*1.7) * 10;
+      y = up ? 55 - i*2.3 + r*0.5 : 40 + r;
+      pts.push(y);
+    }
+    const w=260, h=70, step=w/(pts.length-1);
+    let d = `M0,${pts[0].toFixed(1)}`;
+    pts.forEach((p,i)=>{ if(i>0) d += ` L${(i*step).toFixed(1)},${p.toFixed(1)}`; });
+    return d;
+  }
+
+  function matchesSearch(s, q) {
+    if (!q) return true;
+    const needle = q.trim().toLowerCase();
+    return s.name.toLowerCase().includes(needle) || s.ticker.toLowerCase().includes(needle);
+  }
+
+  // ─── RENDER ──────────────────────────────────────────────
+  function renderRecommendations() {
+    const grid = document.getElementById('recGrid');
+    if (isLoading) {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-muted);font-weight:600;">⏳ جاري تحميل البيانات...</div>`;
+      return;
+    }
+    const top3 = stocks.slice(0,3);
+    if (!top3.length) {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-muted);font-weight:600;">لا توجد بيانات</div>`;
+      return;
+    }
+    grid.innerHTML = top3.map((s,idx)=>{
+      const up = s.change >= 0;
+      const color = s.rec === 'buy' ? '#187EC9' : (s.rec === 'wait' ? '#d4a017' : '#c0392b');
+      return `
+        <div class="rec-card">
+          <div class="rec-top">
+            <span class="tag ${s.rec}">${recLabel[s.rec]}</span>
+            <div class="rec-name">
+              <span class="name">${s.name}</span>
+              <span class="ticker">${s.ticker}</span>
+            </div>
+          </div>
+          <div class="rec-price-row">
+            <span class="rec-change ${up?'up':'down'}">${up?'+':''}${s.change}% ${up?'↗':'↘'}</span>
+            <span class="rec-price">${s.price.toFixed(2)} <span class="unit">ر.س</span></span>
+          </div>
+          <svg class="sparkline" viewBox="0 0 260 70" preserveAspectRatio="none">
+            <path d="${sparkPath(idx*3+1, up)}" fill="none" stroke="${color}" stroke-width="2.5"/>
+          </svg>
+          <div class="confidence-row">
+            <span>نسبة الثقة (AI)</span>
+            <span class="pct">${s.conf}%</span>
+          </div>
+          <div class="confidence-track"><div class="confidence-fill ${fillClass[s.rec]}" style="width:${s.conf}%"></div></div>
+          <div class="rec-note">${s.note || ''}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderTable() {
+    const body = document.getElementById('stocksBody');
+    if (isLoading) {
+      body.innerHTML = `<tr class="loading-row"><td colspan="5">⏳ جاري التحميل من الخادم...</td></tr>`;
+      return;
+    }
+    if (!serverReachable) {
+      body.innerHTML = `<tr class="loading-row"><td colspan="5">⚠️ تعذر الاتصال بالخادم. عرض بيانات تجريبية. <button class="retry-btn" id="retryServer">إعادة المحاولة</button></td></tr>`;
+      setTimeout(() => {
+        const btn = document.getElementById('retryServer');
+        if (btn) btn.addEventListener('click', loadAllData);
+      }, 50);
+    }
+    const filtered = stocks
+      .filter(s => currentFilter === 'all' ? true : s.rec === currentFilter)
+      .filter(s => matchesSearch(s, currentSearch));
+    if (!filtered.length) {
+      body.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px 14px;color:var(--text-muted);font-weight:600;">لا توجد نتائج مطابقة</td></tr>`;
+      return;
+    }
+    body.innerHTML = filtered.map(s=>{
+      const up = s.change >= 0;
+      const barColor = s.rec === 'buy' ? '#187EC9' : (s.rec === 'wait' ? '#d4a017' : '#c0392b');
+      const isExactMatch = currentSearch.trim() && (s.name.toLowerCase() === currentSearch.trim().toLowerCase() || s.ticker === currentSearch.trim());
+      return `
+        <tr data-ticker="${s.ticker}" class="${isExactMatch ? 'row-match' : ''}">
+          <td><div class="company-cell"><span class="ticker-badge">${s.ticker}</span><span class="cname">${s.name}</span></div></td>
+          <td class="price-cell">${s.price.toFixed(2)}</td>
+          <td class="change-cell ${up?'up':'down'}">${up?'+':''}${s.change}%</td>
+          <td><span class="rec-pill ${s.rec}">${recLabel[s.rec]}</span></td>
+          <td><div class="conf-cell"><div class="conf-bar"><div style="width:${s.conf}%;background:${barColor}"></div></div><span class="pct">${s.conf}%</span></div></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function syncSearchUI() {
+    const heroInput = document.getElementById('heroInput');
+    const heroClear = document.getElementById('heroSearchClear');
+    const note = document.getElementById('searchActiveNote');
+    const term = document.getElementById('searchActiveTerm');
+    heroInput.value = currentSearch;
+    heroClear.classList.toggle('show', !!currentSearch);
+    note.classList.toggle('show', !!currentSearch);
+    term.textContent = currentSearch;
+    document.getElementById('heroSearchMsg').classList.remove('show');
+  }
+
+  function setSearch(value, { scroll = false } = {}) {
+    currentSearch = value || '';
+    syncSearchUI();
+    renderTable();
+    if (scroll) {
+      const hasMatch = stocks.some(s => matchesSearch(s, currentSearch));
+      const msg = document.getElementById('heroSearchMsg');
+      msg.classList.toggle('show', !!currentSearch && !hasMatch);
+      document.querySelector('.table-card').scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+  }
+
+  function clearSearch() { setSearch(''); }
+
+  function runAnalysis(query) {
+    if (query === undefined) query = document.getElementById('heroInput').value;
+    query = (query || '').trim();
+    if (!query) return;
+    currentFilter = 'all';
+    document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));
+    document.querySelector('.filter-tab[data-filter="all"]').classList.add('active');
+    setSearch(query, { scroll: true });
+  }
+
+  // ─── DATA FETCHING ──────────────────────────────────────
+  async function loadAllData() {
+    isLoading = true;
+    serverReachable = true;
+    renderRecommendations();
+    renderTable();
+
+    try {
+      const tickers = FALLBACK_STOCKS.map(s => s.ticker);
+      const promises = tickers.map(async (ticker) => {
+        try {
+          const res = await fetch(`${API_BASE}/stock/${ticker}`);
+          if (!res.ok) throw new Error('Server error');
+          const data = await res.json();
+          return { ticker, data };
+        } catch {
+          return { ticker, data: null };
+        }
+      });
+      const results = await Promise.all(promises);
+      let updated = 0;
+      const newStocks = FALLBACK_STOCKS.map(s => {
+        const found = results.find(r => r.ticker === s.ticker);
+        if (found && found.data && found.data.price) {
+          updated++;
+          return { ...s, price: found.data.price, change: found.data.change || 0 };
+        }
+        return s;
+      });
+      stocks = newStocks;
+      if (updated === 0) serverReachable = false;
+      if (stocks.length) {
+        const first = stocks[0];
+        document.getElementById('indexChange').textContent = `${first.change >= 0 ? '+' : ''}${first.change}%`;
+        document.getElementById('indexChange').style.color = first.change >= 0 ? 'var(--blue-primary)' : '#c0392b';
+        document.getElementById('indexValue').textContent = (11842.30 + first.change * 10).toFixed(2);
+      }
+    } catch (err) {
+      serverReachable = false;
+    }
+    isLoading = false;
+    renderRecommendations();
+    renderTable();
+  }
+
+  // ─── DOM BINDINGS ────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    const heroInput = document.getElementById('heroInput');
+    const heroClear = document.getElementById('heroSearchClear');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+
+    heroInput.addEventListener('input', (e) => setSearch(e.target.value));
+    heroClear.addEventListener('click', clearSearch);
+    document.getElementById('clearSearchFromTable').addEventListener('click', clearSearch);
+    analyzeBtn.addEventListener('click', () => runAnalysis());
+    heroInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); runAnalysis(); } });
+
+    document.querySelectorAll('.quick-suggest .chip').forEach(chip => {
+      chip.addEventListener('click', () => runAnalysis(chip.textContent));
+    });
+
+    document.getElementById('filterTabs').addEventListener('click', (e) => {
+      const btn = e.target.closest('.filter-tab');
+      if (!btn) return;
+      document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      if (currentSearch) setSearch('');
+      else renderTable();
+    });
+
+    // ── Assistant ──
+    const assistantOverlay = document.getElementById('assistantOverlay');
+    const assistantBody = document.getElementById('assistantBody');
+    const assistantInput = document.getElementById('assistantInput');
+    const assistantNavBtn = document.getElementById('assistantNavBtn');
+
+    function openAssistant() {
+      assistantOverlay.classList.add('show');
+      if (!assistantBody.dataset.greeted) {
+        addAssistantMessage('bot', 'أهلاً بك! أنا مساعد مساق 🤖\nيمكنك سؤالي عن أي سهم أو استفسار مالي.');
+        assistantBody.dataset.greeted = '1';
+      }
+      setTimeout(() => assistantInput.focus(), 150);
+    }
+    function closeAssistant() { assistantOverlay.classList.remove('show'); }
+
+    assistantNavBtn.addEventListener('click', (e) => { e.preventDefault(); openAssistant(); });
+    document.getElementById('assistantClose').addEventListener('click', closeAssistant);
+    assistantOverlay.addEventListener('click', (e) => { if (e.target === assistantOverlay) closeAssistant(); });
+
+    function addAssistantMessage(who, text) {
+      const div = document.createElement('div');
+      div.className = `msg ${who}`;
+      div.textContent = text;
+      assistantBody.appendChild(div);
+      assistantBody.scrollTop = assistantBody.scrollHeight;
+    }
+
+    async function sendAssistantMessage(text) {
+      text = (text || assistantInput.value).trim();
+      if (!text) return;
+      addAssistantMessage('user', text);
+      assistantInput.value = '';
+      const typing = document.createElement('div');
+      typing.className = 'msg bot';
+      typing.textContent = '⏳ جاري التفكير...';
+      assistantBody.appendChild(typing);
+      assistantBody.scrollTop = assistantBody.scrollHeight;
+
+      try {
+        const res = await fetch(`${API_BASE}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await res.json();
+        if (typing.parentNode) typing.remove();
+        addAssistantMessage('bot', data.reply || 'لم أتمكن من الرد.');
+      } catch (err) {
+        if (typing.parentNode) typing.remove();
+        addAssistantMessage('error', '⚠️ تعذر الاتصال بالخادم. تأكد من تشغيل Flask.');
+      }
+    }
+
+    document.getElementById('assistantSend').addEventListener('click', () => sendAssistantMessage());
+    assistantInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); sendAssistantMessage(); }
+    });
+    document.querySelectorAll('.assistant-suggest .chip').forEach(chip => {
+      chip.addEventListener('click', () => sendAssistantMessage(chip.dataset.q));
+    });
+
+    // ── Load data ──
+    loadAllData();
+  });
+</script>
+</body>
+</html>
