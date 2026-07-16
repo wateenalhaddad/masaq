@@ -11,16 +11,16 @@ app = Flask(__name__)
 CORS(app)
 
 # ------------------------------------------------------------------
-# 1. SECURELY READ OPENAI KEY FROM ENVIRONMENT
+# 1. READ OPENAI KEY (optional)
 # ------------------------------------------------------------------
 API_KEY = os.environ.get("OPENAI_API_KEY")
 client = OpenAI(api_key=API_KEY) if API_KEY else None
 
 if not API_KEY:
-    print("⚠️  WARNING: OPENAI_API_KEY not set. AI features will fallback to rule-based logic.")
+    print("⚠️  WARNING: OPENAI_API_KEY not set. Using rule‑based fallback.")
 
 # ------------------------------------------------------------------
-# 2. SAUDI TICKER MAPPINGS & COMPANY NAMES
+# 2. TICKER MAPPINGS
 # ------------------------------------------------------------------
 TICKER_MAPPING = {
     "2222": "2222.SR", "1120": "1120.SR", "2010": "2010.SR",
@@ -40,9 +40,6 @@ COMPANY_NAMES = {
     "4190": "Jarir Marketing", "4200": "Aldrees", "5110": "Saudi Electricity"
 }
 
-# ------------------------------------------------------------------
-# 3. FETCH REAL-TIME DATA FROM YAHOO FINANCE
-# ------------------------------------------------------------------
 def get_real_time_data(ticker):
     try:
         yahoo_symbol = TICKER_MAPPING.get(ticker, f"{ticker}.SR")
@@ -62,22 +59,69 @@ def get_real_time_data(ticker):
         return {'error': str(e)}
 
 # ------------------------------------------------------------------
+# 3. FALLBACK RESPONSE (when no OpenAI key)
+# ------------------------------------------------------------------
+def get_fallback_reply(user_message):
+    user_message_lower = user_message.lower()
+    
+    # 1. Check if asking about a specific stock
+    for ticker, name in COMPANY_NAMES.items():
+        if ticker in user_message_lower or name.lower() in user_message_lower:
+            data = get_real_time_data(ticker)
+            if 'error' in data:
+                return f"⚠️ عذراً، لم أتمكن من جلب بيانات {name}."
+            price = data['price']
+            change = data['change']
+            up = change >= 0 if change is not None else True
+            change_str = f"{'+' if up else ''}{change:.2f}%" if change is not None else "غير متاح"
+            rec = "شراء" if change is not None and change > 0.5 else ("بيع" if change is not None and change < -0.5 else "انتظار")
+            return f"📊 {name} ({ticker})\nالسعر: {price:.2f} ر.س\nالتغير: {change_str}\nالتوصية: {rec}\n(بناءً على تحليل سريع للبيانات الحالية.)"
+    
+    # 2. Best buy recommendations
+    if any(w in user_message_lower for w in ["أفضل", "توصي", "شراء", "buy", "recommend"]):
+        tickers = list(TICKER_MAPPING.keys())
+        results = []
+        for t in tickers:
+            data = get_real_time_data(t)
+            if 'error' not in data and data['change'] is not None:
+                results.append((t, data['change']))
+        results.sort(key=lambda x: x[1], reverse=True)
+        top = results[:3]
+        if not top:
+            return "عذراً، لم أتمكن من جلب بيانات كافية لتقديم توصيات."
+        reply = "🔥 أفضل 3 توصيات شراء حالياً:\n"
+        for t, ch in top:
+            name = COMPANY_NAMES.get(t, t)
+            reply += f"- {name} ({t}) – تغير {ch:+.2f}%\n"
+        reply += "\nاستخدم زر 'تحليل' للحصول على تحليل مفصل لكل سهم."
+        return reply
+    
+    # 3. Market index
+    if any(w in user_message_lower for w in ["مؤشر", "تداول", "index", "market"]):
+        return "📈 مؤشر تداول (TASI) يتغير يومياً. استخدم الجدول لعرض الأسعار الفردية."
+    
+    # 4. Greeting
+    if any(w in user_message_lower for w in ["مرحبا", "هلا", "السلام", "hi", "hello"]):
+        return "أهلاً بك! أنا مساعد مساق. اسألني عن أي سهم سعودي (مثل: 'كيف أداء أرامكو؟') أو عن أفضل التوصيات."
+    
+    # 5. Default
+    return "مرحباً! أنا مساعد مساق. يمكنك سؤالي عن اسم شركة محددة (مثل 'أرامكو') أو عن 'أفضل توصيات الشراء'."
+
+# ------------------------------------------------------------------
 # 4. ENDPOINTS
 # ------------------------------------------------------------------
 
-# 4a. Stock data
 @app.route("/stock/<ticker>", methods=["GET"])
 def stock_data(ticker):
     data = get_real_time_data(ticker.upper())
     return jsonify(data)
 
-# 4b. Chat (with budget logic and OpenAI fallback)
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.json
     user_message = data.get("message", "").lower()
 
-    # ---- Budget recommendation logic ----
+    # ---- Budget recommendation logic (unchanged) ----
     budget_keywords = ['budget', 'sar', 'riyal', 'cost', 'price', 'afford']
     if any(kw in user_message for kw in budget_keywords) and ('buy' in user_message or 'recommend' in user_message or 'suggest' in user_message):
         budget_match = re.search(r'(\d+(?:\.\d+)?)', user_message)
@@ -93,7 +137,7 @@ def chat():
             valid = [r for r in results if r and r['price'] <= budget]
             if not valid:
                 min_price = min([r['price'] for r in results if r]) if results else 0
-                reply = f"No company in our list is priced at {budget} SAR or less. The cheapest stock is around {min_price:.2f} SAR. Please try a higher budget."
+                reply = f"No company in our list is priced at {budget} SAR or less. The cheapest stock is around {min_price:.2f} SAR."
             else:
                 valid.sort(key=lambda x: x['change'], reverse=True)
                 top = valid[:3]
@@ -101,12 +145,11 @@ def chat():
                 for s in top:
                     name = COMPANY_NAMES.get(s['symbol'], s['symbol'])
                     reply += f"- {name} ({s['symbol']}) - {s['price']:.2f} SAR, daily change {s['change']:+.2f}%\n"
-                reply += "\nClick 'Analyze' on any ticker above to get our full AI recommendation."
             return jsonify({"reply": reply})
 
-    # ---- If no OpenAI client, fallback ----
+    # ---- If no OpenAI client, use fallback ----
     if client is None:
-        reply = "The AI assistant is not available because no OpenAI API key was provided. Please set the OPENAI_API_KEY environment variable to enable full AI responses."
+        reply = get_fallback_reply(user_message)
         return jsonify({"reply": reply})
 
     # ---- Normal OpenAI chat ----
@@ -130,16 +173,10 @@ def chat():
         return jsonify({"reply": reply})
     except Exception as e:
         print("OpenAI error, falling back to rules:", e)
-        # Fallback response
-        if any(w in user_message for w in ["buy", "sell", "hold"]):
-            reply = "To get a BUY/HOLD/SELL recommendation, enter a ticker (e.g., 2222) and click 'Analyze'."
-        elif "2222" in user_message or "aramco" in user_message:
-            reply = "Aramco (2222) – use the Analyze button to see the current Smart Score."
-        else:
-            reply = "I'm your Tadawul AI assistant. Enter a ticker above and click Analyze."
+        # Fallback to rule-based if OpenAI fails
+        reply = get_fallback_reply(user_message)
         return jsonify({"reply": reply})
 
-# 4c. AI analysis for a specific ticker
 @app.route("/analyze/<ticker>", methods=["GET"])
 def ai_analysis(ticker):
     data = get_real_time_data(ticker.upper())
@@ -160,7 +197,7 @@ def ai_analysis(ticker):
             "bestReason": "Based on current data, the stock shows balanced risk/reward."
         })
 
-    # ---- Use OpenAI for smart analysis ----
+    # ---- Use OpenAI ----
     prompt = f"""Stock {ticker} has price {price} SAR, daily change {change}%, volume {volume}.
     Return ONLY a JSON object (no extra text) with these fields:
     {{"prediction":"UP/DOWN/NEUTRAL", "confidence":0-100, "keyFactors":["factor1","factor2","factor3"], "bestReason":"..."}}"""
@@ -178,7 +215,7 @@ def ai_analysis(ticker):
             raise ValueError("No JSON")
         return jsonify(result)
     except Exception as e:
-        # Fallback to rule-based if OpenAI fails
+        # Fallback
         pred = "UP" if change > 0.3 else ("DOWN" if change < -0.3 else "NEUTRAL")
         conf = 65 if abs(change) > 0.5 else 50
         return jsonify({
@@ -188,13 +225,12 @@ def ai_analysis(ticker):
             "bestReason": "Based on current data, the stock shows balanced risk/reward."
         })
 
-# 4d. Root endpoint (health check)
 @app.route("/", methods=["GET"])
 def home():
     return "Tadawul AI server is running. Use /stock/<ticker>, /chat, and /analyze/<ticker>."
 
 # ------------------------------------------------------------------
-# 5. RUN THE APP
+# 5. RUN
 # ------------------------------------------------------------------
 if __name__ == "__main__":
     print("🚀 Server running on http://127.0.0.1:5000")
