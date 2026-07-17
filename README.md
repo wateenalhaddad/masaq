@@ -35,19 +35,20 @@
 - Python (Flask)
 - yfinance
 - OpenAI API
+## طريقة التشغيل
 
-## ▶️ تشغيل المشروع
-
-```bash
+1. تثبيت المتطلبات:
 pip install -r requirements.txt
+
+2. تشغيل الخادم:
 python app.py
-```
 
-ثم افتح المتصفح على:
+3. افتح ملف home.html في المتصفح.
 
-```
-http://127.0.0.1:5000
-```
+ملاحظة:
+إذا رغبت باستخدام ميزات OpenAI، أضف مفتاح API الخاص بك في ملف .env كالتالي:
+
+OPENAI_API_KEY=your_api_key
 
 ## 📌 ملاحظة
 
